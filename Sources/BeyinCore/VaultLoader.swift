@@ -5,7 +5,8 @@ public enum VaultLoader {
     public typealias Progress = @Sendable (Double, LoadPhase, LoadingCounts) -> Void
 
     /// Gizli klasörler (.obsidian, .claude, .agents…) zaten atlanır; bunlar da notlara dahil değil.
-    static let skippedFolders: Set<String> = ["📋 Templates", "node_modules"]
+    /// `receipts`: avenoxbeyin'in ajan makbuzları (hash adlı, otomatik üretilen notlar).
+    static let skippedFolders: Set<String> = ["📋 Templates", "node_modules", "receipts"]
     static let skippedRootFiles: Set<String> = ["AGENTS.md", "CLAUDE.md"]
 
     public static func load(vaultURL: URL, progress: Progress? = nil) async -> LoadedVault {
