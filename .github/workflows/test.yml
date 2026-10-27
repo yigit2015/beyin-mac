@@ -1,0 +1,18 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift sürümü
+        run: swift --version
+      - name: Çekirdek testleri
+        run: swift test
+      - name: Uygulama derlemesi
+        run: swift build -c release

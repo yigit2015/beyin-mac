@@ -1,0 +1,16 @@
+name: Öneri
+description: Yeni bir görünüm, kısayol ya da iyileştirme fikri.
+labels: [öneri]
+body:
+  - type: textarea
+    id: ihtiyac
+    attributes:
+      label: Hangi ihtiyaç?
+      description: Kasanı kullanırken neyi göremiyor ya da yapamıyorsun?
+    validations:
+      required: true
+  - type: textarea
+    id: fikir
+    attributes:
+      label: Önerin
+      description: Nasıl çözülebilir? Bir çizim ya da ekran görüntüsü de olur.

@@ -1,24 +1,55 @@
-# Beyin
+<p align="center">
+  <img src="docs/images/icon.png" width="128" height="128" alt="Beyin simgesi">
+</p>
 
-**İkinci beynini gör.** Obsidian kasanı canlı bir ağ, küre ve özet olarak gösteren, salt okunur bir macOS uygulaması.
-[avenoxbeyin](https://github.com/avenoxai/avenoxbeyin) düzenini tanır; herhangi bir Obsidian kasasıyla da çalışır.
+<h1 align="center">Beyin</h1>
 
-![Odak görünümü](docs/images/odak.jpg)
+<p align="center">
+  <b>İkinci beynini gör.</b><br>
+  Obsidian kasanı canlı bir ağ, dönen bir küre ve günlük bir özet olarak gösteren, salt okunur bir macOS uygulaması.
+</p>
 
-**[Adım adım kurulum sayfası →](https://yigit2015.github.io/beyin-mac/)** · [İndir](https://github.com/yigit2015/beyin-mac/releases/latest) · [English](#english)
+<p align="center">
+  <a href="https://github.com/yigit2015/beyin-mac/releases/latest"><img src="https://img.shields.io/github/v/release/yigit2015/beyin-mac?label=s%C3%BCr%C3%BCm&color=8b5cf6" alt="Sürüm"></a>
+  <img src="https://img.shields.io/badge/macOS-26%2B-2a1f55?logo=apple&logoColor=white" alt="macOS 26+">
+  <img src="https://img.shields.io/badge/Swift-6.2-F05138?logo=swift&logoColor=white" alt="Swift 6.2">
+  <a href="https://github.com/yigit2015/beyin-mac/actions/workflows/test.yml"><img src="https://github.com/yigit2015/beyin-mac/actions/workflows/test.yml/badge.svg" alt="Testler"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/lisans-MIT-4fd1b5" alt="MIT lisansı"></a>
+</p>
 
-> Ekran görüntüleri uydurma bir örnek kasadan ([`Ornek-Kasa/`](Ornek-Kasa)) alındı.
+<p align="center">
+  <a href="https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip"><b>İndir</b></a> ·
+  <a href="https://yigit2015.github.io/beyin-mac/"><b>Adım adım kurulum</b></a> ·
+  <a href="#english">English</a>
+</p>
+
+![Beyin, Odak görünümü](docs/images/odak.jpg)
+
+<p align="center"><sub>Ekran görüntüleri uydurma bir <a href="Ornek-Kasa">örnek kasadan</a> alındı.</sub></p>
 
 ## Neden?
 
-Notlar Obsidian'da yazılır, Claude Code gibi ajanlar avenoxbeyin ile onları her oturumda okur. Ama kasa büyüdükçe neyin
-nereye bağlandığını görmek zorlaşır. Beyin kasanı okur ve dört görünümde gösterir; sayılar elle yazılmaz, klasör
-değiştikçe kendiliğinden güncellenir.
+Notlar Obsidian'da yazılır, Claude Code gibi ajanlar [avenoxbeyin](https://github.com/avenoxai/avenoxbeyin) ile
+onları her oturumda okur. Ama kasa büyüdükçe neyin nereye bağlandığını görmek zorlaşır. Beyin kasanı okur ve dört
+görünümde gösterir. Sayılar elle yazılmaz; klasör değiştikçe kendiliğinden güncellenir.
 
-| | |
+```mermaid
+flowchart LR
+    O["Obsidian<br/>(sen yazarsın)"] --> K[("Kasa klasörü<br/>Markdown notlar")]
+    C["Claude Code + avenoxbeyin<br/>(hafıza)"] <--> K
+    K -- "yalnız okur, canlı izler" --> B["Beyin<br/>(sen görürsün)"]
+    B -. "çift tık: notu aç" .-> O
+```
+
+| Ağ | Küre |
 |---|---|
-| ![Ağ](docs/images/ag.jpg) **Ağ:** kümeler, bağlantılar, bağlantısız notlar | ![Küre](docs/images/kure.jpg) **Küre:** kasanın dönen 3B haritası |
-| ![Odak](docs/images/odak.jpg) **Odak:** çekirdek, türler ve en çok bağlanan notlar | ![Genel bakış](docs/images/genel-bakis.jpg) **Genel bakış:** aktivite, kasa sağlığı |
+| ![Ağ görünümü](docs/images/ag.jpg) | ![Küre görünümü](docs/images/kure.jpg) |
+| Her proje ve tür kendi kümesinde; bir nota tıkla, bağlantıları parlasın. | Kasanın yavaşça dönen 3B haritası; sürükleyerek döndür. |
+
+| Genel bakış |
+|---|
+| ![Genel bakış](docs/images/genel-bakis.jpg) |
+| Haftalık aktivite, en çok bağlanan notlar, bugünün notu ve çözülmemiş bağlantılar gibi kasa sağlığı uyarıları. |
 
 ## Gizlilik
 

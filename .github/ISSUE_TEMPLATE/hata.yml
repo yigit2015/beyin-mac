@@ -1,0 +1,38 @@
+name: Hata bildir
+description: Beyin beklenmedik bir şey yaptı ya da açılmıyor.
+labels: [hata]
+body:
+  - type: textarea
+    id: ne-oldu
+    attributes:
+      label: Ne oldu?
+      description: Ne yaptın, ne bekliyordun, ne gördün?
+    validations:
+      required: true
+  - type: textarea
+    id: adimlar
+    attributes:
+      label: Nasıl tekrarlanır?
+      placeholder: |
+        1. Ağ görünümünü aç
+        2. …
+  - type: input
+    id: surum
+    attributes:
+      label: Beyin ve macOS sürümü
+      placeholder: Beyin 0.1.1, macOS 26.1, Apple Silicon
+    validations:
+      required: true
+  - type: dropdown
+    id: kasa
+    attributes:
+      label: Kasa türü
+      options:
+        - avenoxbeyin kasası
+        - Başka bir Obsidian kasası
+        - Örnek kasa
+  - type: textarea
+    id: ekran
+    attributes:
+      label: Ekran görüntüsü
+      description: Varsa ekle. Gerçek notlarının görünmediğinden emin ol.

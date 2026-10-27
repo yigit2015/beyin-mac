@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Kurulum rehberi
+    url: https://yigit2015.github.io/beyin-mac/
+    about: Kurulum adımları ve sık sorulan sorular.
+  - name: avenoxbeyin
+    url: https://github.com/avenoxai/avenoxbeyin/issues
+    about: İkinci beyin sisteminin kendisiyle ilgili sorular için.
