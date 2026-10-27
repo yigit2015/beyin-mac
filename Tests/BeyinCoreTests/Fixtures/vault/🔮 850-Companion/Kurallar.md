@@ -1,0 +1,3 @@
+# Kurallar
+
+Kısa ve net.

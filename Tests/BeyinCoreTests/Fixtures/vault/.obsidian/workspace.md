@@ -1,0 +1,2 @@
+# gizli klasör
+[[Core]]

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beyin: ikinci beynini gör</title>
+<meta name="description" content="Obsidian kasanı canlı bir ağ, küre ve özet olarak gösteren, salt okunur ve açık kaynak macOS uygulaması. avenoxbeyin ile uyumlu.">
+<meta property="og:title" content="Beyin: ikinci beynini gör">
+<meta property="og:description" content="Obsidian kasanı canlı bir ağ olarak gösteren salt okunur macOS uygulaması.">
+<meta property="og:image" content="https://yigit2015.github.io/beyin-mac/images/odak.jpg">
+<link rel="icon" href="images/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night: #15112a;
+  --night-2: #1d1838;
+  --line: #3a3360;
+  --text: #eeecf7;
+  --muted: #a7a1c4;
+  --teal: #4fd1b5;
+  --violet: #a78bfa;
+  --amber: #f5b84b;
+  --display: "Bricolage Grotesque", system-ui, sans-serif;
+  --body: "Instrument Sans", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: radial-gradient(120% 80% at 75% 0%, #2a1f55 0%, var(--night) 55%) fixed, var(--night);
+  color: var(--text);
+  font: 17px/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--teal); text-underline-offset: 3px; }
+a:hover { color: #7fe3cd; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 6px; }
+.wrap { width: min(1080px, 100% - 32px); margin-inline: auto; }
+
+/* Üst çubuk */
+.top { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; position: relative; z-index: 2; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font: 600 20px var(--display); }
+.brand img { width: 32px; height: 32px; }
+.top nav { display: flex; gap: 22px; font-size: 15px; }
+.top nav a { color: var(--muted); text-decoration: none; }
+.top nav a:hover { color: var(--text); }
+
+/* Hero: örnek kasanın gerçek ağı */
+.hero { position: relative; min-height: min(720px, 92vh); display: flex; align-items: center; }
+#sky { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero-text { position: relative; z-index: 1; max-width: 30rem; padding: 40px 0 80px; pointer-events: none; }
+.hero-text > * { pointer-events: auto; }
+h1 {
+  font: 800 clamp(48px, 8vw, 96px)/0.95 var(--display);
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -0.035em;
+  margin: 0 0 22px;
+}
+.lede { font-size: 20px; color: #d6d2ea; margin: 0 0 30px; max-width: 28rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 22px; border-radius: 999px;
+  font: 600 16px var(--body); text-decoration: none;
+  background: var(--teal); color: #0d2a24;
+}
+.btn:hover { background: #7fe3cd; color: #0d2a24; }
+.btn.ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+.btn.ghost:hover { box-shadow: inset 0 0 0 1px var(--muted); color: var(--text); }
+.req { margin: 18px 0 0; font-size: 14px; color: var(--muted); }
+.sky-hint { position: absolute; right: 16px; bottom: 18px; font-size: 13px; color: var(--muted); z-index: 1; }
+
+section { padding: 88px 0; }
+h2 { font: 700 clamp(30px, 4.4vw, 44px)/1.1 var(--display); letter-spacing: -0.02em; margin: 0 0 14px; }
+.intro { color: var(--muted); max-width: 40rem; margin: 0 0 40px; }
+
+/* Ekran görüntüleri */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.tabs button {
+  font: 500 15px var(--body); color: var(--muted); background: none; border: 0;
+  padding: 8px 14px; border-radius: 999px; cursor: pointer;
+}
+.tabs button[aria-selected="true"] { background: var(--night-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+.shot { margin: 0; }
+.shot img { width: 100%; height: auto; display: block; border-radius: 14px; box-shadow: 0 30px 80px -30px #000, 0 0 0 1px var(--line); }
+.shot figcaption { margin-top: 14px; color: var(--muted); font-size: 15px; }
+
+/* Kurulum adımları: gerçek bir sıra */
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.steps > li {
+  counter-increment: step;
+  display: grid; grid-template-columns: 76px 1fr; gap: 0 18px;
+  padding: 26px 0; border-top: 1px solid var(--line);
+}
+.steps > li::before {
+  content: counter(step);
+  font: 800 56px/1 var(--display); color: var(--violet);
+  font-variation-settings: "opsz" 96;
+}
+.steps h3 { font: 600 22px/1.3 var(--display); margin: 6px 0 8px; }
+.steps p { margin: 0 0 12px; max-width: 40rem; }
+.optional { font: 500 13px var(--body); color: var(--amber); margin-left: 8px; vertical-align: 3px; }
+.copy {
+  position: relative; display: flex; align-items: flex-start; gap: 12px;
+  background: #0f0c20; border: 1px solid var(--line); border-radius: 10px;
+  padding: 14px 14px 14px 16px; max-width: 44rem;
+  font: 14px/1.55 var(--mono); color: #dcd8ef;
+}
+.copy code { flex: 1; white-space: pre-wrap; word-break: break-word; font: inherit; }
+.copy button {
+  flex: none; font: 500 13px var(--body); color: var(--text); cursor: pointer;
+  background: var(--night-2); border: 1px solid var(--line); border-radius: 7px; padding: 5px 10px;
+}
+.copy button:hover { border-color: var(--muted); }
+.aside { margin-top: 28px; padding: 18px 20px; border-radius: 12px; background: var(--night-2); max-width: 44rem; }
+.aside p { margin: 0; }
+
+/* İki sütunlu metin bölümleri */
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 36px; }
+.cols h3 { font: 600 20px/1.3 var(--display); margin: 0 0 8px; }
+.cols p { margin: 0; color: #d6d2ea; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; vertical-align: 1px; }
+
+table.keys { border-collapse: collapse; width: 100%; max-width: 44rem; }
+.keys td { padding: 10px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.keys td:first-child { width: 42%; padding-right: 16px; }
+kbd {
+  font: 500 14px var(--body); color: var(--text);
+  background: var(--night-2); border: 1px solid var(--line); border-bottom-width: 2px;
+  border-radius: 6px; padding: 1px 7px; margin-right: 3px;
+}
+
+details { border-top: 1px solid var(--line); padding: 18px 0; max-width: 46rem; }
+details:last-of-type { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; font: 600 18px var(--display); list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--muted); font-weight: 400; }
+details[open] summary::after { content: "–"; }
+details p { margin: 12px 0 0; color: #d6d2ea; }
+
+footer { padding: 48px 0 64px; color: var(--muted); font-size: 15px; border-top: 1px solid var(--line); }
+footer p { margin: 0 0 6px; }
+
+@media (max-width: 720px) {
+  body { font-size: 16px; }
+  .top nav a:not(:last-child) { display: none; }
+  .hero { min-height: 640px; align-items: flex-end; }
+  #sky { opacity: 0.55; }
+  .sky-hint { display: none; }
+  .steps > li { grid-template-columns: 48px 1fr; }
+  .steps > li::before { font-size: 40px; }
+  section { padding: 64px 0; }
+}
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <a class="brand" href="#"><img src="images/icon.png" alt="" width="32" height="32">Beyin</a>
+  <nav aria-label="Sayfa">
+    <a href="#gorunumler">Görünümler</a>
+    <a href="#kurulum">Kurulum</a>
+    <a href="#sss">Sorular</a>
+    <a href="https://github.com/yigit2015/beyin-mac">GitHub</a>
+  </nav>
+</header>
+
+<main>
+  <div class="hero">
+    <canvas id="sky" aria-label="Örnek bir kasanın not ağı: 94 not, 149 bağlantı" role="img"></canvas>
+    <div class="wrap">
+      <div class="hero-text">
+        <h1>İkinci beynini gör.</h1>
+        <p class="lede">Beyin, Obsidian kasanı canlı bir ağ, dönen bir küre ve günlük bir özet olarak gösterir. Notlarına dokunmaz, internete çıkmaz.</p>
+        <div class="actions">
+          <a class="btn" href="https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip">Beyin'i indir</a>
+          <a class="btn ghost" href="#kurulum">Kurulum adımları</a>
+        </div>
+        <p class="req">macOS 26 Tahoe ve üstü için. Ücretsiz ve açık kaynak (MIT).</p>
+      </div>
+    </div>
+    <p class="sky-hint">Arkadaki ağ, örnek kasanın gerçek bağlantıları. Üzerine gel.</p>
+  </div>
+
+  <section id="gorunumler" class="wrap">
+    <h2>Dört görünüm, tek kasa</h2>
+    <p class="intro">Sayılar elle yazılmaz. Obsidian'da bir not eklediğinde ya da bağladığında Beyin klasörü yeniden okur ve görünümler kendiliğinden güncellenir.</p>
+    <div class="tabs" role="tablist" aria-label="Görünümler">
+      <button role="tab" aria-selected="true" data-img="odak" data-cap="Odak: çekirdek notların, türlerin ve bir kümede en çok bağlanan notlar. Sağdaki panel seçili notun bağlantılarını ve önizlemesini gösterir.">Odak</button>
+      <button role="tab" aria-selected="false" data-img="ag" data-cap="Ağ: her proje ve tür kendi kümesinde. Bir nota tıkla, bağlandığı notlar parlasın; bağlantısız notlar kümenin çevresinde soluk durur.">Ağ</button>
+      <button role="tab" aria-selected="false" data-img="kure" data-cap="Küre: kasanın yavaşça dönen 3B haritası. Sürükleyerek döndür, kasa istatistikleri ve son eklenenler yanda.">Küre</button>
+      <button role="tab" aria-selected="false" data-img="genel-bakis" data-cap="Genel bakış: haftalık aktivite, en çok bağlanan notlar, bugünün notu ve çözülmemiş bağlantılar gibi kasa sağlığı uyarıları.">Genel bakış</button>
+    </div>
+    <figure class="shot">
+      <img id="shot" src="images/odak.jpg" width="1600" height="932" alt="Beyin uygulamasının Odak görünümü">
+      <figcaption id="cap">Odak: çekirdek notların, türlerin ve bir kümede en çok bağlanan notlar. Sağdaki panel seçili notun bağlantılarını ve önizlemesini gösterir.</figcaption>
+    </figure>
+  </section>
+
+  <section id="kurulum" class="wrap">
+    <h2>Kurulum</h2>
+    <p class="intro">Beş dakikalık iş. Kasan ve avenoxbeyin zaten hazırsa doğrudan üçüncü adıma geç.</p>
+    <ol class="steps">
+      <li>
+        <div>
+          <h3>Bir Obsidian kasası hazırla</h3>
+          <p><a href="https://obsidian.md">Obsidian</a>'ı kur ve bir kasa oluştur. Kasa, içinde Markdown notların duran sıradan bir klasördür. Beyin bu klasörü okur.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>avenoxbeyin'i kur <span class="optional">isteğe bağlı</span></h3>
+          <p><a href="https://github.com/avenoxai/avenoxbeyin">avenoxbeyin</a>, Claude Code gibi ajanlara kalıcı hafıza veren açık kaynak bir ikinci beyin sistemi. Kurarsan Beyin çekirdek notlarını, projelerini ve sohbetlerini ayrı ayrı tanır. Kasa klasörünü Claude Code'da aç ve şunu yaz:</p>
+          <div class="copy"><code>https://avenox.lol/beyin.md adresini oku. Bu klasöre ikinci beynimi kur.</code><button type="button">Kopyala</button></div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Beyin'i indir</h3>
+          <p><a href="https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip">Beyin.zip</a> dosyasını indir, çift tıklayıp aç ve <strong>Beyin.app</strong>'i <strong>Uygulamalar</strong> klasörüne sürükle.</p>
+          <p>Terminal'i seviyorsan:</p>
+          <div class="copy"><code>curl -fsSLO https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip
+ditto -x -k Beyin.zip /Applications && open /Applications/Beyin.app</code><button type="button">Kopyala</button></div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Aç ve kasanı seç</h3>
+          <p>Kasan <code>~/Beyin</code> klasöründeyse Beyin doğrudan açılır. Değilse açılış ekranında <strong>Başka klasör seç…</strong> düğmesine bas ve kasa klasörünü göster. Seçim hatırlanır; sonra <strong>Ayarlar</strong>'dan değiştirebilirsin.</p>
+        </div>
+      </li>
+    </ol>
+    <div class="aside">
+      <p>Kendi notlarını açmadan önce denemek mi istiyorsun? <a href="https://github.com/yigit2015/beyin-mac/releases/latest/download/Ornek-Kasa.zip">Örnek kasayı indir</a>, aç ve dördüncü adımda o klasörü seç. İçindeki 94 not uydurmadır.</p>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="gizlilik">
+    <h2 id="gizlilik">Notların senin</h2>
+    <p class="intro">Beyin bir pencere, depo değil. Yazma ve düzenleme Obsidian'da kalır.</p>
+    <div class="cols">
+      <div><h3>Asla yazmaz</h3><p>Kasandaki hiçbir dosyayı değiştirmez, taşımaz ya da silmez. Bir notu düzenlemek için çift tıkla, Obsidian'da açılsın.</p></div>
+      <div><h3>İnternete çıkmaz</h3><p>Hesap, analitik ya da sunucu yok. "Beyne sor" cihazındaki notlarda yerel arama yapar.</p></div>
+      <div><h3>Private notlar gizli</h3><p>Frontmatter'ında <code>"visibility": "private"</code> olan notların içeriği gösterilmez ve aramaya girmez.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="kasalar">
+    <h2 id="kasalar">Hangi kasalarla çalışır?</h2>
+    <div class="cols">
+      <div>
+        <h3><span class="dot" style="background:var(--violet)"></span>avenoxbeyin kasası</h3>
+        <p>Kökte <code>🔮 850-Companion</code> klasörü varsa Beyin onu tanır: çekirdek notlar (Core, Kurallar, Last-Session, Threads, Journal) ortadaki küre olur; projeler, günlükler, görevler, kişiler ve sohbetler kendi renginde kümelenir.</p>
+      </div>
+      <div>
+        <h3><span class="dot" style="background:var(--teal)"></span>Herhangi bir Obsidian kasası</h3>
+        <p>Her üst klasör bir küme, içindeki klasörler alt küme olur. <code>[[wikilink]]</code>'ler Obsidian gibi ada göre çözülür. JSON ve YAML frontmatter okunur.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="kisayollar">
+    <h2 id="kisayollar">Kısayollar</h2>
+    <table class="keys">
+      <tr><td><kbd>⌘1</kbd><kbd>⌘2</kbd><kbd>⌘3</kbd><kbd>⌘4</kbd></td><td>Odak, Ağ, Küre, Genel bakış</td></tr>
+      <tr><td><kbd>⌘F</kbd></td><td>Notlarda ara</td></tr>
+      <tr><td><kbd>⌘L</kbd></td><td>Beyne sor</td></tr>
+      <tr><td><kbd>⌘K</kbd></td><td>Komut paleti</td></tr>
+      <tr><td><kbd>⌘O</kbd> ya da çift tık</td><td>Seçili notu Obsidian'da aç</td></tr>
+      <tr><td><kbd>⌘R</kbd></td><td>Kasayı yeniden oku</td></tr>
+      <tr><td><kbd>⌘+</kbd><kbd>⌘−</kbd><kbd>⌘0</kbd></td><td>Yakınlaştır, uzaklaştır, sıfırla</td></tr>
+    </table>
+  </section>
+
+  <section id="sss" class="wrap">
+    <h2>Sorular</h2>
+    <details>
+      <summary>macOS "Beyin açılamıyor" ya da "doğrulanamadı" diyor</summary>
+      <p>Sürümler Apple tarafından onaylanır (notarize), normalde uyarı çıkmaz. Yine de görürsen <strong>Sistem Ayarları › Gizlilik ve Güvenlik</strong> bölümünün altındaki <strong>Yine de Aç</strong> düğmesine bas.</p>
+    </details>
+    <details>
+      <summary>avenoxbeyin kurmak şart mı?</summary>
+      <p>Hayır. Beyin her Obsidian kasasıyla çalışır. avenoxbeyin kuruluysa çekirdek notları, projeleri ve sohbetleri ayrıca tanır.</p>
+    </details>
+    <details>
+      <summary>Windows'ta ya da eski macOS'ta çalışır mı?</summary>
+      <p>Hayır. Beyin, macOS 26'nın cam (Liquid Glass) arayüzüyle yazılmış yerel bir Mac uygulaması. Eski sürümlerde açılmaz.</p>
+    </details>
+    <details>
+      <summary>Claude Code sohbetlerim de görünebilir mi?</summary>
+      <p>Evet, isteğe bağlı bir kancayla. <a href="https://github.com/yigit2015/beyin-mac/tree/main/extras/sohbet-arsivi">Sohbet arşivi</a> her konuşmayı kasana Markdown olarak yazar ve Beyin onları Sohbetler olarak gösterir. Konuşmanın tam metni diske yazıldığı için kurmadan önce sayfadaki notları oku.</p>
+    </details>
+    <details>
+      <summary>Bir hata buldum, bir fikrim var</summary>
+      <p><a href="https://github.com/yigit2015/beyin-mac/issues">GitHub'da bir issue aç</a>. Kod açık; katkılara da açığız.</p>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Beyin, MIT lisanslı açık kaynak bir topluluk projesidir. <a href="https://github.com/yigit2015/beyin-mac">Kaynak kodu GitHub'da.</a></p>
+    <p>avenoxbeyin'in klasör düzenini okur ama kodunu içermez. Avenox ile resmi bir bağı yoktur.</p>
+  </div>
+</footer>
+
+<script>
+// Örnek kasanın gerçek grafiği: [başlık, tür] ve bağlantı çiftleri (Scripts/ornek_kasa.py'den).
+const GRAPH = {"n":[["2026-10-01","daily"],["2026-10-03","daily"],["2026-10-05","daily"],["2026-10-07","daily"],["2026-10-09","daily"],["2026-10-11","daily"],["2026-10-13","daily"],["2026-10-15","daily"],["2026-10-17","daily"],["2026-10-19","daily"],["2026-10-21","daily"],["2026-10-23","daily"],["2026-10-25","daily"],["2026-10-27","daily"],["50-30-20 bütçe kuralı","fact"],["Bahçe sulama","fact"],["Bütçe takibi","fact"],["Derin çalışma","fact"],["Ekmek mayası","fact"],["Film listesi","fact"],["Fotoğraf saklama","fact"],["Gelecek planları","fact"],["Git temelleri","fact"],["Haftalık rutin","fact"],["Hediye fikirleri","fact"],["Kahve demleme oranları","fact"],["Kelime defteri","fact"],["Klavye kısayolları","fact"],["Koşu programı","fact"],["Not alma yöntemi","fact"],["Obsidian düzeni","fact"],["Okuma listesi","fact"],["Podcast notları","fact"],["Pomodoro tekniği","fact"],["Rastgele fikir","fact"],["Seyahat çantası listesi","fact"],["Sunum hazırlama","fact"],["Swift öğrenme yolu","fact"],["SwiftUI düzen ipuçları","fact"],["Tarif defteri","fact"],["Uyku düzeni","fact"],["Yapay zekâ ile çalışma","fact"],["Bora","person"],["Ece","person"],["Mert","person"],["Selin","person"],["Usta Hasan","person"],["Banyo planı","project"],["Duş seçenekleri","project"],["Havalandırma","project"],["Dolap ölçüleri","project"],["Mutfak planı","project"],["Tezgâh seçenekleri","project"],["Usta teklifleri","project"],["Ekim kitabı: Sapiens","project"],["Eylül kitabı: Dune","project"],["Kitap kulübü","project"],["Kulüp kuralları","project"],["Okunacaklar havuzu","project"],["Tartışma soruları","project"],["Bildirimler","project"],["Hata listesi","project"],["Senkronizasyon","project"],["Test planı","project"],["Veri modeli","project"],["Lansman planı","project"],["Mağaza açıklaması","project"],["Uygulama adı","project"],["Ekran akışı","project"],["Kullanıcı görüşmeleri","project"],["Mobil uygulama fikri","project"],["Renk paleti","project"],["İkon taslakları","project"],["Ekmek tarifi sorusu","chat"],["Sunum taslağı","chat"],["Koşu programı ayarı","chat"],["Uygulama adı fikirleri","chat"],["Kitap önerileri","chat"],["Tadilat bütçesi hesabı","chat"],["Swift hata ayıklama","chat"],["Haftalık plan","chat"],["Fayans seçimi","task"],["Kasım kitabı","task"],["Koşu ayakkabısı al","task"],["Mutfak bütçesi","task"],["Onboarding akışı","task"],["Sunum provası","task"],["Vergi belgelerini topla","task"],["Yedekleri kontrol et","task"],["Core","core"],["Journal","core"],["Kurallar","core"],["Last-Session","core"],["Threads","core"]],"e":[[0,23],[1,84],[2,84],[3,82],[4,28],[4,84],[5,15],[5,23],[5,25],[6,29],[6,40],[6,41],[7,29],[7,31],[8,85],[8,87],[9,31],[9,36],[10,86],[11,87],[12,14],[12,20],[13,27],[13,87],[14,41],[15,18],[15,23],[15,27],[16,22],[16,31],[16,38],[16,40],[16,61],[16,70],[16,87],[17,20],[17,23],[17,33],[17,38],[17,40],[17,41],[17,51],[17,72],[18,23],[18,30],[18,39],[18,64],[20,23],[20,28],[20,29],[20,82],[20,86],[22,27],[22,31],[22,39],[22,43],[22,44],[22,76],[23,58],[23,91],[25,28],[25,35],[25,37],[27,38],[27,85],[28,31],[28,38],[28,39],[28,93],[29,33],[29,38],[29,41],[30,31],[30,37],[30,81],[30,83],[31,35],[31,40],[31,41],[31,80],[33,38],[33,40],[35,36],[35,41],[35,77],[36,85],[37,41],[37,73],[37,89],[38,87],[39,68],[39,83],[40,41],[40,80],[41,84],[42,56],[45,56],[46,70],[47,48],[47,49],[47,50],[47,52],[47,53],[49,51],[49,53],[50,51],[51,52],[51,53],[54,55],[54,56],[54,57],[55,56],[55,59],[56,57],[56,58],[56,59],[56,88],[57,59],[60,61],[60,64],[60,69],[61,62],[61,64],[61,66],[62,64],[62,70],[63,64],[63,68],[63,69],[64,69],[64,72],[65,67],[66,67],[67,70],[67,72],[68,70],[69,70],[70,71],[70,72],[70,81],[70,89],[73,88],[76,87],[79,87],[81,93],[82,92],[84,92],[85,93],[89,91]]};
+const COLORS = { core: "#a78bfa", fact: "#4fd1b5", person: "#f48fb1", task: "#c5e06a", daily: "#6fa8f7", chat: "#f2f0fa", project: "#9b97b8" };
+
+(() => {
+  const canvas = document.getElementById("sky");
+  const ctx = canvas.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const nodes = GRAPH.n.map(([title, cat], i) => ({ title, cat, i, deg: 0, x: 0, y: 0, vx: 0, vy: 0 }));
+  const edges = GRAPH.e.map(([a, b]) => [nodes[a], nodes[b]]);
+  const adj = nodes.map(() => new Set());
+  for (const [a, b] of edges) { a.deg++; b.deg++; adj[a.i].add(b.i); adj[b.i].add(a.i); }
+
+  // Türler bir halka üzerinde başlar, sonra basit bir kuvvet yerleşimi.
+  const order = ["core", "fact", "project", "daily", "task", "chat", "person"];
+  nodes.forEach((n, k) => {
+    const angle = (order.indexOf(n.cat) / order.length) * Math.PI * 2 + (k % 7) * 0.05;
+    const r = n.cat === "core" ? 0.05 : 0.55 + ((k * 37) % 30) / 100;
+    n.x = Math.cos(angle) * r; n.y = Math.sin(angle) * r;
+  });
+  for (let step = 0; step < 320; step++) {
+    for (let a = 0; a < nodes.length; a++) for (let b = a + 1; b < nodes.length; b++) {
+      const p = nodes[a], q = nodes[b];
+      let dx = p.x - q.x, dy = p.y - q.y, d2 = dx * dx + dy * dy + 1e-4;
+      const f = 0.0009 / d2;
+      p.vx += dx * f; p.vy += dy * f; q.vx -= dx * f; q.vy -= dy * f;
+    }
+    for (const [p, q] of edges) {
+      const dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy) || 1e-3, f = (d - 0.16) * 0.03;
+      p.vx += dx / d * f; p.vy += dy / d * f; q.vx -= dx / d * f; q.vy -= dy / d * f;
+    }
+    for (const n of nodes) { n.vx -= n.x * 0.012; n.vy -= n.y * 0.012; n.x += n.vx; n.y += n.vy; n.vx *= 0.6; n.vy *= 0.6; }
+  }
+  const xs = nodes.map(n => n.x), ys = nodes.map(n => n.y);
+  const bx = [Math.min(...xs), Math.max(...xs)], by = [Math.min(...ys), Math.max(...ys)];
+  const labels = new Set([...nodes].sort((a, b) => b.deg - a.deg).slice(0, 5).map(n => n.i));
+
+  let W = 0, H = 0, hover = null;
+  const start = performance.now();
+  function place() {
+    const wide = W > 720;
+    const left = wide ? W * 0.42 : 20, right = W - 30, top = 90, bottom = H - (wide ? 60 : H * 0.42);
+    const s = Math.min((right - left) / (bx[1] - bx[0]), (bottom - top) / (by[1] - by[0]));
+    const ox = (left + right) / 2 - (bx[0] + bx[1]) / 2 * s, oy = (top + bottom) / 2 - (by[0] + by[1]) / 2 * s;
+    for (const n of nodes) { n.sx = ox + n.x * s; n.sy = oy + n.y * s; }
+  }
+  function resize() {
+    const dpr = window.devicePixelRatio || 1, rect = canvas.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    place();
+  }
+  function pos(n, t) {
+    if (reduce) return [n.sx, n.sy];
+    return [n.sx + Math.sin(t / 2600 + n.i) * 3, n.sy + Math.cos(t / 3100 + n.i * 1.7) * 3];
+  }
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    // Tek açılış anı: bağlantılar 1,4 saniyede belirir.
+    const reveal = reduce ? 1 : Math.min(1, (t - start) / 1400);
+    const near = hover ? adj[hover.i] : null;
+    ctx.lineWidth = 1.2;
+    for (const [p, q] of edges) {
+      const hot = hover && (p === hover || q === hover);
+      ctx.strokeStyle = hot ? "rgba(245,184,75,0.9)" : `rgba(167,139,250,${(hover ? 0.12 : 0.42) * reveal})`;
+      const [x1, y1] = pos(p, t), [x2, y2] = pos(q, t);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    }
+    const taken = [];
+    for (const n of nodes) {
+      const [x, y] = pos(n, t);
+      const r = n.deg === 0 ? 2 : Math.min(9, 2.5 + Math.sqrt(n.deg) * 1.6);
+      const dim = hover && n !== hover && !near.has(n.i);
+      ctx.globalAlpha = dim ? 0.2 : n.deg === 0 ? 0.45 : 1;
+      ctx.fillStyle = COLORS[n.cat];
+      ctx.shadowColor = COLORS[n.cat]; ctx.shadowBlur = dim ? 0 : 10;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      const show = hover ? (n === hover || near.has(n.i)) : labels.has(n.i);
+      if (show && W > 720) {
+        ctx.font = `${n === hover ? 600 : 500} 13px "Instrument Sans", system-ui`;
+        // Çakışan etiketler atlanır; üzerine gelinen not her zaman yazılır.
+        const box = [x + r + 4, y - 10, x + r + 10 + ctx.measureText(n.title).width, y + 8];
+        const free = !taken.some(b => box[0] < b[2] && b[0] < box[2] && box[1] < b[3] && b[1] < box[3]);
+        if (free || n === hover) {
+          taken.push(box);
+          ctx.globalAlpha = n === hover ? 1 : 0.75;
+          ctx.fillStyle = "#eeecf7";
+          ctx.fillText(n.title, x + r + 6, y + 4);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (!reduce || hover !== null || reveal < 1) requestAnimationFrame(draw);
+  }
+  canvas.addEventListener("pointermove", e => {
+    const rect = canvas.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    let best = null, bestD = 18 * 18;
+    for (const n of nodes) { const d = (n.sx - mx) ** 2 + (n.sy - my) ** 2; if (d < bestD) { best = n; bestD = d; } }
+    const changed = best !== hover;
+    hover = best;
+    canvas.style.cursor = best ? "pointer" : "default";
+    if (changed && reduce) requestAnimationFrame(draw);
+  });
+  canvas.addEventListener("pointerleave", () => { hover = null; if (reduce) requestAnimationFrame(draw); });
+  addEventListener("resize", () => { resize(); if (reduce) requestAnimationFrame(draw); });
+  resize();
+  requestAnimationFrame(draw);
+})();
+
+// Görünüm sekmeleri
+document.querySelectorAll('[role="tab"]').forEach(tab => tab.addEventListener("click", () => {
+  document.querySelectorAll('[role="tab"]').forEach(t => t.setAttribute("aria-selected", String(t === tab)));
+  const img = document.getElementById("shot");
+  img.src = `images/${tab.dataset.img}.jpg`;
+  img.alt = `Beyin uygulamasının ${tab.textContent} görünümü`;
+  document.getElementById("cap").textContent = tab.dataset.cap;
+}));
+
+// Komutları kopyala
+document.querySelectorAll(".copy button").forEach(button => button.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(button.previousElementSibling.textContent);
+    button.textContent = "Kopyalandı";
+  } catch {
+    button.textContent = "Seçip kopyala";
+  }
+  setTimeout(() => { button.textContent = "Kopyala"; }, 1800);
+}));
+</script>
+</body>
+</html>

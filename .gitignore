@@ -1,0 +1,7 @@
+.DS_Store
+.build/
+.swiftpm/
+*.app
+*.zip
+# Tasarım çalışma dosyaları ve referans görseller repoya girmez.
+tasarim/
