@@ -35,12 +35,17 @@ Gereken: **macOS 26 (Tahoe)** veya üstü. Obsidian ve avenoxbeyin isteğe bağl
    > https://avenox.lol/beyin.md adresini oku. Bu klasöre ikinci beynimi kur.
 
    Ayrıntılar: [avenoxbeyin kurulumu](https://github.com/avenoxai/avenoxbeyin#en-kolay-kurulum-bir-klasör-bir-mesaj).
-3. **Beyin'i indir.** [Son sürümden](https://github.com/yigit2015/beyin-mac/releases/latest) `Beyin-….zip` dosyasını
-   indir, aç ve `Beyin.app`'i **Uygulamalar** klasörüne sürükle.
+3. **Beyin'i indir.** [Beyin.zip](https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip) dosyasını
+   indir, aç ve `Beyin.app`'i **Uygulamalar** klasörüne sürükle. Bu sürüm henüz Apple onaylı değil: ilk açılışta macOS
+   uyarırsa **Sistem Ayarları › Gizlilik ve Güvenlik › Yine de Aç**. Terminal'den uyarısız kurmak için:
+   ```bash
+   curl -fsSLO https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip
+   ditto -x -k Beyin.zip /Applications && open /Applications/Beyin.app
+   ```
 4. **Aç ve kasanı seç.** Varsayılan klasör `~/Beyin`. Kasan başka yerdeyse açılış ekranındaki
    **Başka klasör seç…** düğmesini kullan; seçim hatırlanır, sonra **Ayarlar**'dan değiştirebilirsin.
 
-Notlarını açmadan denemek için bu repodaki [`Ornek-Kasa`](Ornek-Kasa) klasörünü indirip onu seçebilirsin.
+Notlarını açmadan denemek için [Ornek-Kasa.zip](https://github.com/yigit2015/beyin-mac/releases/latest/download/Ornek-Kasa.zip)'i indir, aç ve o klasörü seç.
 
 ### Kısayollar
 
@@ -108,8 +113,8 @@ globe and an overview dashboard. It understands the [avenoxbeyin](https://github
 layout and works with any Obsidian vault (top-level folders become clusters).
 
 - Never writes to your vault, makes no network requests, hides `private` notes.
-- Requires macOS 26 (Tahoe). Download the latest `.zip` from
-  [Releases](https://github.com/yigit2015/beyin-mac/releases/latest), drag `Beyin.app` to Applications, pick your
-  vault folder.
+- Requires macOS 26 (Tahoe). Download [Beyin.zip](https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip),
+  drag `Beyin.app` to Applications, pick your vault folder. The build is not notarized yet: on first launch use
+  System Settings › Privacy & Security › Open Anyway.
 - Build from source: `swift test && Scripts/package_app.sh`.
 - The UI is in Turkish. Unofficial community project, not affiliated with Avenox. MIT licensed.

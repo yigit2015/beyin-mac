@@ -221,7 +221,8 @@ footer p { margin: 0 0 6px; }
         <div>
           <h3>Beyin'i indir</h3>
           <p><a href="https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip">Beyin.zip</a> dosyasını indir, çift tıklayıp aç ve <strong>Beyin.app</strong>'i <strong>Uygulamalar</strong> klasörüne sürükle.</p>
-          <p>Terminal'i seviyorsan:</p>
+          <p>İlk açılışta macOS "Beyin açılmadı" derse <strong>Sistem Ayarları › Gizlilik ve Güvenlik</strong> bölümüne git ve <strong>Yine de Aç</strong> düğmesine bas. Bu sürüm henüz Apple onaylı olmadığı için bunu bir kez yapman gerekir.</p>
+          <p>Terminal'i seviyorsan bu komut uyarı çıkarmadan kurar:</p>
           <div class="copy"><code>curl -fsSLO https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip
 ditto -x -k Beyin.zip /Applications && open /Applications/Beyin.app</code><button type="button">Kopyala</button></div>
         </div>
@@ -279,7 +280,7 @@ ditto -x -k Beyin.zip /Applications && open /Applications/Beyin.app</code><butto
     <h2>Sorular</h2>
     <details>
       <summary>macOS "Beyin açılamıyor" ya da "doğrulanamadı" diyor</summary>
-      <p>Sürümler Apple tarafından onaylanır (notarize), normalde uyarı çıkmaz. Yine de görürsen <strong>Sistem Ayarları › Gizlilik ve Güvenlik</strong> bölümünün altındaki <strong>Yine de Aç</strong> düğmesine bas.</p>
+      <p>Bu sürüm henüz Apple tarafından onaylanmadı (notarize edilmedi), bu yüzden macOS ilk açılışta uyarır. <strong>Sistem Ayarları › Gizlilik ve Güvenlik</strong> bölümünün altındaki <strong>Yine de Aç</strong> düğmesine bas; bir kez yeterli. Kurulum adımlarındaki Terminal komutu uyarı çıkarmaz. Kod açık, istersen kendin de derleyebilirsin.</p>
     </details>
     <details>
       <summary>avenoxbeyin kurmak şart mı?</summary>
