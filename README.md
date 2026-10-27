@@ -35,10 +35,10 @@ görünümde gösterir. Sayılar elle yazılmaz; klasör değiştikçe kendiliğ
 
 ```mermaid
 flowchart LR
-    O["Obsidian<br/>(sen yazarsın)"] --> K[("Kasa klasörü<br/>Markdown notlar")]
-    C["Claude Code + avenoxbeyin<br/>(hafıza)"] <--> K
-    K -- "yalnız okur, canlı izler" --> B["Beyin<br/>(sen görürsün)"]
-    B -. "çift tık: notu aç" .-> O
+    O["Obsidian: sen yazarsın"] --> K[("Kasa klasörü: Markdown notlar")]
+    C["Claude Code + avenoxbeyin: hafıza"] --> K
+    K -->|yalnız okur, canlı izler| B["Beyin: sen görürsün"]
+    B -.->|çift tık: notu aç| O
 ```
 
 | Ağ | Küre |
