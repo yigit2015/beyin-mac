@@ -4,11 +4,6 @@ import Foundation
 public enum VaultLoader {
     public typealias Progress = @Sendable (Double, LoadPhase, LoadingCounts) -> Void
 
-    /// Gizli klasörler (.obsidian, .claude, .agents…) zaten atlanır; bunlar da notlara dahil değil.
-    /// `receipts`: avenoxbeyin'in ajan makbuzları (hash adlı, otomatik üretilen notlar).
-    static let skippedFolders: Set<String> = ["📋 Templates", "node_modules", "receipts"]
-    static let skippedRootFiles: Set<String> = ["AGENTS.md", "CLAUDE.md"]
-
     public static func load(vaultURL: URL, progress: Progress? = nil) async -> LoadedVault {
         await Task.detached(priority: .userInitiated) {
             loadSync(vaultURL: vaultURL, progress: progress)
@@ -16,13 +11,13 @@ public enum VaultLoader {
     }
 
     public static func loadSync(vaultURL: URL, progress: Progress? = nil) -> LoadedVault {
-        let files = markdownFiles(in: vaultURL)
-        let layout = VaultLayout.detect(in: vaultURL)
+        let context = VaultContext.discover(in: vaultURL)
+        let files = markdownFiles(in: vaultURL, context: context)
         var notes: [Note] = []
         var bodies: [Note.ID: String] = [:]
         notes.reserveCapacity(files.count)
         for (offset, file) in files.enumerated() {
-            if let (note, body) = readNote(file.url, relativePath: file.relativePath, layout: layout) {
+            if let (note, body) = readNote(file.url, relativePath: file.relativePath, context: context) {
                 notes.append(note)
                 if !note.isPrivate { bodies[note.id] = body }
             }
@@ -46,42 +41,57 @@ public enum VaultLoader {
         let relativePath: String
     }
 
-    static func markdownFiles(in root: URL) -> [FileEntry] {
+    /// Not adayları. Atlama kuralları `SourceRules` ve `VaultContext`'te; sembolik bağlar izlenmez.
+    static func markdownFiles(in root: URL, context: VaultContext? = nil) -> [FileEntry] {
+        let context = context ?? VaultContext.discover(in: root)
         let rootPath = root.standardizedFileURL.path
+        let keys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey]
         guard let enumerator = FileManager.default.enumerator(
-            at: root, includingPropertiesForKeys: [.isDirectoryKey],
+            at: root, includingPropertiesForKeys: keys,
             options: [.skipsHiddenFiles, .skipsPackageDescendants]) else { return [] }
         var result: [FileEntry] = []
         for case let url as URL in enumerator {
-            let name = url.lastPathComponent
-            if skippedFolders.contains(name) {
-                enumerator.skipDescendants()
-                continue
-            }
-            guard url.pathExtension.lowercased() == "md" else { continue }
             let full = url.standardizedFileURL.path
             guard full.hasPrefix(rootPath + "/") else { continue }
             let relative = String(full.dropFirst(rootPath.count + 1))
-            if !relative.contains("/"), skippedRootFiles.contains(relative) { continue }
+            let values = try? url.resourceValues(forKeys: Set(keys))
+            if values?.isSymbolicLink == true {
+                enumerator.skipDescendants()
+                continue
+            }
+            let name = url.lastPathComponent
+            if values?.isDirectory == true {
+                let key = SourceRules.dirKey(name)
+                if SourceRules.excludedDirs.contains(key) || SourceRules.isSensitive(name)
+                    || context.excludedDirKeys.contains(key)
+                    || context.templateFolders.contains(relative.precomposedStringWithCanonicalMapping) {
+                    enumerator.skipDescendants()
+                }
+                continue
+            }
+            guard url.pathExtension.lowercased() == "md", !SourceRules.isExcludedFile(name) else { continue }
             result.append(FileEntry(url: url, relativePath: relative))
         }
         return result.sorted { $0.relativePath < $1.relativePath }
     }
 
-    static func readNote(_ url: URL, relativePath: String, layout: VaultLayout) -> (Note, String)? {
+    static func readNote(_ url: URL, relativePath: String, context: VaultContext) -> (Note, String)? {
         guard let data = try? Data(contentsOf: url) else { return nil }
         let text = String(decoding: data, as: UTF8.self)
         let attributes = try? FileManager.default.attributesOfItem(atPath: url.path)
         let modified = attributes?[.modificationDate] as? Date ?? .distantPast
         let created = attributes?[.creationDate] as? Date
-        return makeNote(text: text, relativePath: relativePath, modified: modified, created: created, layout: layout)
+        return makeNote(text: text, relativePath: relativePath, modified: modified, created: created, context: context)
     }
 
-    /// Dosya metninden Note üretir (testler diskten bağımsız çağırır).
+    /// Dosya metninden Note üretir (testler diskten bağımsız çağırır). Makbuzlar, üretilmiş
+    /// dosyalar (`kind: receipt`, `generated: true`) ve şablonlar not değildir: nil.
     static func makeNote(text: String, relativePath: String, modified: Date, created: Date?,
-                         layout: VaultLayout = .avenox) -> (Note, String) {
+                         context: VaultContext = .avenox) -> (Note, String)? {
         let (front, body) = Frontmatter.split(text)
-        let placement = Categorizer.place(relativePath: relativePath, kind: front.kind, layout: layout)
+        guard !front.isGenerated, !front.isTemplate else { return nil }
+        let placement = Categorizer.place(relativePath: relativePath, kind: front.kind, project: front.project,
+                                          context: context)
         let fileTitle = ((relativePath as NSString).lastPathComponent as NSString).deletingPathExtension
         // Obsidian'da kimlik dosya adıdır. Yalnız "haftalik-ozet" gibi slug adlı notlarda ilk H1 daha okunur.
         let isSlug = !fileTitle.contains(" ") && fileTitle == fileTitle.lowercased() && fileTitle.contains("-")
@@ -97,7 +107,7 @@ public enum VaultLoader {
             subcluster: placement.subcluster,
             visibility: visibility,
             created: front.date ?? created,
-            modified: modified,
+            modified: front.modified ?? modified,
             wordCount: body.split(whereSeparator: \.isWhitespace).count,
             // Python referansıyla aynı: frontmatter dahil tüm metindeki bağlantılar.
             outgoingLinks: Wikilinks.extract(from: Substring(text)),

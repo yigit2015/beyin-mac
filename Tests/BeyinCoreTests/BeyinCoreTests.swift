@@ -27,13 +27,54 @@ struct FrontmatterTests {
         #expect(Frontmatter.split("---\ntarih: dün\n---\n").0.date == nil)
     }
 
-    @Test func slugTitlesUseFirstHeading() {
-        let (note, _) = VaultLoader.makeNote(text: "# Haftalık özet: ekim\n\nmetin", relativePath: "knowledge/haftalik-ozet.md",
-                                             modified: .now, created: nil)
+    @Test func slugTitlesUseFirstHeading() throws {
+        let (note, _) = try #require(VaultLoader.makeNote(text: "# Haftalık özet: ekim\n\nmetin",
+                                                          relativePath: "knowledge/haftalik-ozet.md", modified: .now, created: nil))
         #expect(note.title == "Haftalık özet: ekim")
-        let (core, _) = VaultLoader.makeNote(text: "# Düşünme ortağı", relativePath: "🔮 850-Companion/last-session.md",
-                                             modified: .now, created: nil)
+        let (core, _) = try #require(VaultLoader.makeNote(text: "# Düşünme ortağı", relativePath: "🔮 850-Companion/last-session.md",
+                                                          modified: .now, created: nil))
         #expect(core.title == "last-session")
+    }
+
+    /// docs/v3/MARKDOWN.md'deki düz YAML: satır sonu yorum, tırnaklı liste öğeleri, yer tutucu.
+    @Test func upstreamYAMLSubset() {
+        let text = """
+        ---
+        # kind: person
+        kaynak: olcum   # not
+        baslik: "a # b"  # yorum
+        tags: [a, "b, c", 'd''e']
+        aliases:
+          - "x"
+        ---
+        """
+        let front = Frontmatter.split(text + "\n").0
+        #expect(front.kind == nil)
+        #expect(front.fields["kaynak"] == "olcum")
+        #expect(front.fields["baslik"] == "a # b")
+        #expect(front.tags == ["a", "b, c", "d'e"])
+        #expect(Frontmatter.split("---\ntags: [\"a\", 1]\n---\n").0.tags == ["a"])
+        #expect(Frontmatter.split("---\ncreated: {{TODAY}}\n---\n").0.isTemplate)
+    }
+
+    @Test func visibilityFailsClosed() {
+        #expect(Frontmatter.split("---\nvisibility: public\n---\n").0.visibility == .internal)
+        #expect(Frontmatter.split("---\nvisibility: Internal\n---\n").0.visibility == .internal)
+        #expect(Frontmatter.split("---\nvisibility:\n---\n").0.visibility == .internal)
+        #expect(Frontmatter.split("---\nvisibility: ekip\n---\n").0.visibility == .private)
+    }
+
+    @Test func generatedSourcesAreNotNotes() {
+        #expect(VaultLoader.makeNote(text: "---\n{\"generated\": true}\n---\n", relativePath: "x.md", modified: .now, created: nil) == nil)
+        #expect(VaultLoader.makeNote(text: "---\ngenerated: true\n---\n", relativePath: "x.md", modified: .now, created: nil) == nil)
+        #expect(VaultLoader.makeNote(text: "---\nkind: receipt\n---\n", relativePath: "x.md", modified: .now, created: nil) == nil)
+        #expect(VaultLoader.makeNote(text: "---\n{\"generated\": 1}\n---\n", relativePath: "x.md", modified: .now, created: nil) != nil)
+    }
+
+    @Test func modifiedFromCommonObsidianKeys() throws {
+        let (note, _) = try #require(VaultLoader.makeNote(text: "---\nmodified: 2026-10-01\n---\n", relativePath: "x.md",
+                                                          modified: .now, created: nil))
+        #expect(Calendar.current.dateComponents([.year, .month, .day], from: note.modified) == DateComponents(year: 2026, month: 10, day: 1))
     }
 
     @Test func noFrontmatterOrUnclosed() {
@@ -60,6 +101,18 @@ struct WikilinkTests {
     @Test func keyIgnoresFolderExtensionAndCase() {
         #expect(Wikilinks.key(for: "Konular/Kılavuz.md") == Wikilinks.key(for: "kılavuz"))
     }
+
+    /// macOS dosya adını NFD verebilir; elle yazılan bağlantı NFC'dir.
+    @Test func keyIsUnicodeNFC() {
+        let nfd = "knowledge/S\u{0327}iir.md"
+        #expect(Wikilinks.key(for: nfd) == Wikilinks.key(for: "Şiir"))
+        let graph = GraphBuilder.build(notes: [
+            Note(id: nfd, title: "Şiir", category: .fact, modified: .now),
+            Note(id: "a.md", title: "a", category: .fact, modified: .now, outgoingLinks: ["şiir"]),
+        ])
+        #expect(graph.stats.linkCount == 1)
+        #expect(graph.stats.unresolvedLinkCount == 0)
+    }
 }
 
 @Suite("Categorizer")
@@ -74,6 +127,10 @@ struct CategorizerTests {
         ("projects/eski-notlar/vaultlar/beyin/x.md", nil, .project, "eski-notlar", "vaultlar"),
         ("projects/eski-notlar/MANIFEST.md", nil, .project, "eski-notlar", nil),
         ("Hoş geldiniz.md", nil, .fact, nil, nil),
+        // Resmi şablonun proje klasörü ve frontmatter önceliği
+        ("🏰 300-Projects/demo/alt/x.md", nil, .project, "demo", "alt"),
+        ("projects/demo/gorev.md", "task", .task, "demo", nil),
+        ("daily", nil, .fact, nil, nil),
     ])
     func places(path: String, kind: String?, category: NoteCategory, project: String?, sub: String?) {
         let placement = Categorizer.place(relativePath: path, kind: kind)
@@ -89,8 +146,19 @@ struct CategorizerTests {
         ("Kişiler/ali.md", "person", .person, nil, nil),
     ])
     func placesGenericVault(path: String, kind: String?, category: NoteCategory, project: String?, sub: String?) {
-        let placement = Categorizer.place(relativePath: path, kind: kind, layout: .generic)
+        let placement = Categorizer.place(relativePath: path, kind: kind, context: .generic)
         #expect(placement == Categorizer.Placement(category: category, project: project, subcluster: sub))
+    }
+
+    @Test func frontmatterProjectAndDiscoveredCompanion() {
+        #expect(Categorizer.place(relativePath: "notes/plan.md", kind: nil, project: "demo")
+            == Categorizer.Placement(category: .project, project: "demo"))
+        // Açık tür önce gelir: proje alanı taşıyan bilgi notu bilgi olarak kalır.
+        #expect(Categorizer.place(relativePath: "knowledge/x.md", kind: "fact", project: "demo")
+            == Categorizer.Placement(category: .fact, project: "demo"))
+        let custom = VaultContext(layout: .avenox, companion: "🌙 Ayna")
+        #expect(Categorizer.place(relativePath: "🌙 Ayna/Core.md", kind: nil, context: custom).category == .core)
+        #expect(Categorizer.place(relativePath: "🔮 850-Companion/Core.md", kind: nil, context: custom).category == .fact)
     }
 }
 
@@ -98,26 +166,32 @@ struct CategorizerTests {
 struct VaultLoadingTests {
     let vault = Bundle.module.url(forResource: "Fixtures/vault", withExtension: nil)!
 
-    @Test func skipsHiddenTemplatesAndAgentFiles() {
+    @Test func skipsHiddenSensitiveAndAgentFiles() {
         let paths = VaultLoader.markdownFiles(in: vault).map(\.relativePath)
-        #expect(paths.count == 7)
-        #expect(!paths.contains { $0.hasPrefix(".obsidian") || $0.hasPrefix("📋") || $0 == "AGENTS.md" })
+        #expect(!paths.contains { $0.hasPrefix(".obsidian") || $0.hasPrefix("receipts") || $0.hasPrefix("🔐") })
+        #expect(!paths.contains("AGENTS.md"))
+        #expect(!paths.contains("knowledge/SKILL.md"))
+        // Şablon ve üretilmiş dosya taranır ama not sayılmaz (frontmatter'dan anlaşılır).
+        #expect(paths.contains("📋 Templates/Kisi.md"))
     }
 
     @Test func buildsGraphAndStats() {
         let loaded = VaultLoader.loadSync(vaultURL: vault)
         let stats = loaded.graph.stats
-        #expect(stats.noteCount == 7)
+        #expect(stats.noteCount == 9)
         // Core–Kurallar, a–Core, a–b (b→a ve a→b tek sayılır; [[Core]] iki kez geçse de tek)
         #expect(stats.linkCount == 3)
         #expect(stats.unresolvedLinkCount == 1)  // [[Yok]]
-        #expect(stats.isolatedCount == 3)        // ayse, c, sohbet
+        #expect(stats.isolatedCount == 5)        // ayse, c, sohbet, plan, is-listesi
         #expect(stats.privateCount == 1)
         #expect(stats.count(.core) == 2)
-        #expect(stats.count(.project) == 2)
+        #expect(stats.count(.project) == 3)
+        #expect(stats.count(.task) == 1)
         #expect(stats.count(.chat) == 1)
         #expect(stats.count(.daily) == 0)
         #expect(stats.bySubcluster["project:eski-notlar/vaultlar"] == 1)
+        #expect(loaded.graph.note("🏰 300-Projects/demo/plan.md")?.project == "demo")
+        #expect(loaded.graph.note("notes/is-listesi.md")?.project == "demo")
         // a: giden Core, b; gelen b → 3
         #expect(stats.topConnected.first == RankedNote(id: "knowledge/a.md", degree: 3))
     }
@@ -148,6 +222,70 @@ struct VaultLoadingTests {
         #expect(hits.map(\.id) == ["projects/eski-notlar/vaultlar/b.md"])
         #expect(loaded.index.search("gizli", in: loaded.graph, includePrivate: false, limit: 5).isEmpty)
         #expect(loaded.index.search("kasa yapısı", in: loaded.graph, includePrivate: true, limit: 5).first?.id == "knowledge/a.md")
+    }
+}
+
+/// Diskte geçici kasa: keşif kuralları (companion, index.json, Obsidian şablon ayarı, sembolik bağ).
+@Suite("Kasa keşfi")
+struct DiscoveryTests {
+    func makeVault(_ files: [String: String]) throws -> URL {
+        let root = FileManager.default.temporaryDirectory.appending(path: "beyin-test-" + UUID().uuidString)
+        for (path, text) in files {
+            let url = root.appending(path: path)
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try text.write(to: url, atomically: true, encoding: .utf8)
+        }
+        return root
+    }
+
+    @Test func companionIsDiscovered() throws {
+        let named = try makeVault(["Benim Companion/Core.md": "", "notlar/a.md": ""])
+        #expect(VaultContext.companionFolder(in: named) == "Benim Companion")
+        let byCore = try makeVault(["🌙 Ayna/Soul.md": "", "notlar/a.md": ""])
+        #expect(VaultContext.companionFolder(in: byCore) == "🌙 Ayna")
+        let two = try makeVault(["A Companion/Core.md": "", "B Echo/Core.md": ""])
+        #expect(VaultContext.companionFolder(in: two) == nil)
+        let archived = try makeVault(["Companion Arşiv/Core.md": ""])
+        #expect(VaultContext.companionFolder(in: archived) == nil)
+        #expect(VaultContext.discover(in: try makeVault(["Okuma/a.md": ""])).layout == .generic)
+    }
+
+    @Test func userExcludedDirsFromRuntimeIndex() throws {
+        let state = try makeVault(["index.json": #"{"excluded_dirs": ["Arşiv-Kod"]}"#])
+        let vault = try makeVault([
+            ".beyin-runtime.json": #"{"state": "\#(state.path)", "schema": 1}"#,
+            "projects/x/ARŞİV-KOD/README.md": "", "projects/x/not.md": "",
+        ])
+        #expect(VaultLoader.markdownFiles(in: vault).map(\.relativePath) == ["projects/x/not.md"])
+        // Korunan bir ad listeyi geçersiz kılar: upstream de o zaman her şeyi indeksler.
+        try #"{"excluded_dirs": ["Arşiv-Kod", "knowledge"]}"#.write(to: state.appending(path: "index.json"), atomically: true, encoding: .utf8)
+        #expect(VaultLoader.markdownFiles(in: vault).count == 2)
+    }
+
+    @Test func obsidianTemplateFolderAndSymlinks() throws {
+        let outside = try makeVault(["dis.md": ""])
+        let vault = try makeVault([
+            ".obsidian/templates.json": #"{"folder": "Şablonlarım/"}"#,
+            "Şablonlarım/Gunluk.md": "", "notlar/a.md": "",
+        ])
+        try FileManager.default.createSymbolicLink(at: vault.appending(path: "bag"), withDestinationURL: outside)
+        try FileManager.default.createSymbolicLink(at: vault.appending(path: "notlar/bag.md"),
+                                                   withDestinationURL: outside.appending(path: "dis.md"))
+        #expect(VaultLoader.markdownFiles(in: vault).map(\.relativePath) == ["notlar/a.md"])
+    }
+
+    @Test(arguments: [
+        ("🔐 Kasa", true), ("410-Şifreler", true), ("MU\u{0308}S\u{0327}TERI\u{0307}LER", true), ("Private Notes", true),
+        ("Kasaba gezisi", false), ("Okuma", false), ("vendor", false),
+    ])
+    func sensitiveFolders(name: String, sensitive: Bool) {
+        #expect(SourceRules.isSensitive(name) == sensitive)
+    }
+
+    @Test func dirKeyFoldsTurkishI() {
+        #expect(SourceRules.dirKey("ARŞİV") == SourceRules.dirKey("arşiv"))
+        #expect(SourceRules.dirKey("IŞIK") == SourceRules.dirKey("ışık"))
+        #expect(SourceRules.dirKey("Node_Modules") == "node_modules")
     }
 }
 

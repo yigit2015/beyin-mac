@@ -3,15 +3,15 @@ import Foundation
 // Ortak sözleşme: BeyinCore ile arayüz katmanı arasındaki tipler.
 // Bu dosyayı claude1 yönetir; değişiklik gerekirse önce haber verilir.
 
-/// Bir notun grafikteki türü. Yol ve frontmatter'daki `kind` alanından çıkarılır.
+/// Bir notun grafikteki türü. Önce frontmatter'daki `kind`/`project`, yoksa klasörden çıkarılır (Categorizer).
 public enum NoteCategory: String, CaseIterable, Codable, Sendable, Identifiable {
-    case core       // 🔮 850-Companion: Core, Kurallar, Journal, Last-Session, Threads
-    case fact       // knowledge/ ya da kind: fact
-    case person     // notes/kisiler/ ya da kind: person
-    case task       // tasks/ ya da kind: task
-    case daily      // daily/
+    case core       // keşfedilen companion klasörü: Core, Kurallar, Journal, Last-Session, Threads
+    case fact       // kind: fact ya da başka yere düşmeyen not
+    case person     // kind: person ya da notes/kisiler/
+    case task       // kind: task ya da tasks/
+    case daily      // kind: daily ya da daily/
     case chat       // projects/sohbet-arsivi/
-    case project    // projects/<ad>/ altındaki diğer her şey
+    case project    // project alanı, projects/<ad>/ ya da 🏰 300-Projects/<ad>/
 
     public var id: String { rawValue }
 
@@ -55,13 +55,14 @@ public struct Note: Identifiable, Hashable, Sendable {
     public var category: NoteCategory
     /// Frontmatter'daki `kind` (fact, person, task, note…), yoksa nil.
     public var kind: String?
-    /// "eski-notlar", "sohbet-arsivi" gibi; projects/ dışındaysa nil (genel kasada üst klasör).
+    /// "eski-notlar", "sohbet-arsivi" gibi: proje klasörü ya da frontmatter `project`; yoksa nil (genel kasada üst klasör).
     public var project: String?
     /// Projenin ilk alt klasörü: "sohbetler", "masaustu", "vaultlar"…
     public var subcluster: String?
     public var visibility: Visibility
-    /// Frontmatter tarihi (tarih/date/created), yoksa dosya oluşturma tarihi.
+    /// Frontmatter tarihi (tarih/date/created/created_at), yoksa dosya oluşturma tarihi.
     public var created: Date?
+    /// Frontmatter'daki updated_at/updated/modified…, yoksa dosyanın değişme zamanı.
     public var modified: Date
     public var wordCount: Int
     /// Ham wikilink hedefleri (`[[hedef|takma ad]]` → "hedef").
