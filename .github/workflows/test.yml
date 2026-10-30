@@ -16,3 +16,7 @@ jobs:
         run: swift test
       - name: Uygulama derlemesi
         run: swift build -c release
+      - name: Ağ ve yazma denetimi
+        run: |
+          Scripts/package_app.sh
+          bash Scripts/verify_offline.sh Beyin.app

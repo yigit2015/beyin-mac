@@ -53,9 +53,22 @@ flowchart LR
 
 ## Gizlilik
 
-- **Asla yazmaz.** Uygulama kasandaki hiçbir dosyayı değiştirmez; düzenleme Obsidian'da yapılır.
-- **İnternete çıkmaz.** Ağ isteği, hesap, analitik yok. "Beyne sor" cihazdaki yerel aramadır.
+- **Asla yazmaz.** Uygulama kasandaki hiçbir dosyayı değiştirmez; düzenleme Obsidian'da yapılır. Yalnız seçtiğin
+  kasa yolu ve görünüm ayarları, kasanın dışında macOS ayarlarında tutulur.
+- **İnternete çıkmaz.** Ağ isteği, hesap, analitik yok. "Beyne sor" cihazdaki yerel aramadır. Bir notun içindeki web
+  bağlantısına kendin tıklarsan macOS onu varsayılan tarayıcında açar; ⌘O notu Obsidian'a devreder.
 - `"visibility": "private"` notların içeriği gösterilmez ve aramaya girmez.
+
+Bu iddialar bağımsız bir güvenlik denetiminden geçmedi; avenoxbeyin ekibi de doğrulamadı. Uygulama App Sandbox
+kullanmadığı için ağsızlığı macOS zorlamaz. Kendin kontrol etmek için depoyu klonla (bkz. Kaynaktan derleme) ve:
+
+```bash
+Scripts/verify_offline.sh                          # kaynaktan derler; kodu, ikiliyi ve bağlı çerçeveleri tarar
+Scripts/verify_offline.sh /Applications/Beyin.app  # indirdiğin uygulamayı tarar
+```
+
+Betik ağ ya da yazma API'si, web görünümü, güncelleyici, gömülü adres ve ağ yetkisi bulursa ne bulduğunu yazar ve
+hata koduyla çıkar. Her değişiklikte CI'da da çalışır.
 
 ## Kurulum
 
@@ -91,13 +104,12 @@ Notlarını açmadan denemek için [Ornek-Kasa.zip](https://github.com/yigit2015
 
 ## Hangi kasalarla çalışır?
 
-- **avenoxbeyin kasası** (kökte `🔮 850-Companion` var): çekirdek notlar (Core, Kurallar, Last-Session, Threads,
-  Journal), `projects/<proje>/<alt>` kümeleri, `daily/`, `tasks/`, `notes/kisiler/` ve frontmatter'daki `kind`
-  (`fact`, `person`, `task`, `daily`) tanınır.
-- **Herhangi bir Obsidian kasası:** her üst klasör bir küme, ikinci seviye klasörler alt küme olur.
-  `[[wikilink]]`'ler Obsidian gibi çözülür (ada göre, büyük/küçük harf duyarsız).
+- **avenoxbeyin kasası:** avenoxbeyin'in [Markdown sözleşmesini](https://github.com/avenoxai/avenoxbeyin/blob/main/docs/v3/MARKDOWN.md)
+  esas alır. Hiçbir klasörün var olduğunu varsaymaz; çekirdek klasörü ve kategorileri önce frontmatter'dan
+  (`kind`, `project`, `visibility`), sonra klasör adlarından keşfeder.
+- **Herhangi bir Obsidian kasası:** her üst klasör bir küme olur. `[[wikilink]]`'ler Obsidian gibi çözülür.
 
-JSON ve basit YAML frontmatter okunur. Gizli klasörler (`.obsidian`, `.claude`…) ve `📋 Templates` atlanır.
+Neyin okunup neyin atlandığı: [docs/UYUMLULUK.md](docs/UYUMLULUK.md).
 
 ## İsteğe bağlı: Claude Code sohbetlerini kasaya arşivle
 
@@ -126,8 +138,8 @@ Geliştirirken `BEYIN_VAULT=/yol/kasa` ile başka bir kasa, `BEYIN_PREVIEW=1` il
 
 ## Teşekkür ve bağlantı
 
-Beyin, [avenoxbeyin](https://github.com/avenoxai/avenoxbeyin)'in (MIT) klasör ve frontmatter düzenini okur; onun
-kodunu içermez ve çalıştırmaz. **Avenox ile resmi bir bağı yoktur**, topluluk tarafından yapılmış bir araçtır.
+Beyin, [avenoxbeyin](https://github.com/avenoxai/avenoxbeyin)'in (MIT) Markdown ve frontmatter sözleşmesine uygun
+okumaya çalışır; onun kodunu içermez ve çalıştırmaz. **Avenox ile resmi bir bağı yoktur**, topluluk tarafından yapılmış bir araçtır.
 
 Hata ve öneriler için [issue](https://github.com/yigit2015/beyin-mac/issues) açabilirsin.
 
@@ -140,10 +152,13 @@ Hata ve öneriler için [issue](https://github.com/yigit2015/beyin-mac/issues) a
 ## English
 
 **Beyin** ("brain" in Turkish) is a read-only macOS app that visualizes an Obsidian vault as a live network, a rotating
-globe and an overview dashboard. It understands the [avenoxbeyin](https://github.com/avenoxai/avenoxbeyin) second-brain
-layout and works with any Obsidian vault (top-level folders become clusters).
+globe and an overview dashboard. It aims to follow the [avenoxbeyin](https://github.com/avenoxai/avenoxbeyin)
+[Markdown contract](https://github.com/avenoxai/avenoxbeyin/blob/main/docs/v3/MARKDOWN.md) and works with any Obsidian
+vault (top-level folders become clusters).
 
-- Never writes to your vault, makes no network requests, hides `private` notes.
+- Never writes to your vault, makes no network requests, hides `private` notes. These claims have not been
+  independently audited, nor verified by the avenoxbeyin team; check them yourself with `Scripts/verify_offline.sh`
+  (or `Scripts/verify_offline.sh /Applications/Beyin.app`), which also runs in CI.
 - Requires macOS 26 (Tahoe). Download [Beyin.zip](https://github.com/yigit2015/beyin-mac/releases/latest/download/Beyin.zip),
   drag `Beyin.app` to Applications, pick your vault folder. The build is not notarized yet: on first launch use
   System Settings › Privacy & Security › Open Anyway.
